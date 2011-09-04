@@ -1,0 +1,33 @@
+<!--
+      Copyright 2011 Jean-Christophe Sirot <sirot@chelonix.com>
+ 
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+ 
+      http://www.apache.org/licenses/LICENSE-2.0
+ 
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+ -->
+ <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+<l:ajax>
+  <html>
+    <head>
+      <link rel="stylesheet" href="${resURL}/css/style.css" type="text/css" />
+      <link rel="stylesheet" href="${resURL}/css/color.css" type="text/css" />
+    </head>
+    <body>
+      <form method="post" action="upload?job=${request.getParameter('job')}" enctype="multipart/form-data">
+        <span class="setting-name">${%Upload an image file:}</span>
+        <input type="file" name="jobicon.file" size="40"/>
+        <st:nbsp/>
+        <input type="submit" value="${%Upload}"/>
+      </form>
+    </body>
+  </html>
+</l:ajax>
+</j:jelly>
