@@ -15,6 +15,7 @@
  */
 package jenkins.plugins.jobicon;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
@@ -78,10 +79,15 @@ public class CustomIconProperty extends JobProperty<Job<?, ?>>
 		public CustomIconProperty newInstance(StaplerRequest req, 
 			JSONObject formData) throws FormException
 		{
-			return formData.has("jobicon")
-				? req.bindJSON(CustomIconProperty.class,  
-				formData.getJSONObject("jobicon"))
-				: null;
+			if (formData.has("jobicon")) {
+				String name = formData.getJSONObject("jobicon").getString("name");
+				if (new File(name).isAbsolute()) {
+					throw new FormException(Messages.Config_absolute(), "name");
+				}
+				return req.bindJSON(CustomIconProperty.class, 
+					formData.getJSONObject("jobicon"));
+			}
+			return null;
 		}
 
 		/**
@@ -93,19 +99,16 @@ public class CustomIconProperty extends JobProperty<Job<?, ?>>
 		public FormValidation doCheckName(@AncestorInPath Job job, @QueryParameter String name) 
 				throws IOException, InterruptedException
 		{
-			if (checkExist(job, name)) {
-				return FormValidation.ok();
-			} else {
-				return FormValidation.error(Messages.Config_noSuchFile());
+			File sub = new File(name);
+			if (sub.isAbsolute()) {
+				return FormValidation.error(Messages.Config_absolute());
 			}
+			FilePath path = new FilePath(job.getRootDir()).child(CustomIconProperty.PATH);
+			return path.validateRelativePath(name, true, true);
+			
 		}
 		
-		private boolean checkExist(Job job, String name)
-				throws IOException, InterruptedException
-		{
-			FilePath path = new FilePath(job.getRootDir()).child(CustomIconProperty.PATH);
-			return path == null ? false : path.child(name).exists();
-		}
+		
 
 		/**
 		 * Serves the upload form
