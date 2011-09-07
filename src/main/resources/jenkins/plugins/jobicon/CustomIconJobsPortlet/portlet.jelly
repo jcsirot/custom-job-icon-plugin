@@ -22,6 +22,15 @@
         <j:while test="${i &lt; jobs.size() &amp;&amp; j &lt; 3}">
           <j:set var="job" value="${jobs.get(i)}" />
           <td style="border: 1px solid #bbb;">
+            <j:if test="${job.buildable and job.hasPermission(job.BUILD)}">
+              <a href="${job.shortUrl}build?delay=0sec">
+                <img src="${imagesURL}/16x16/clock.png"
+                     title="${%Schedule a build}" alt="${%Schedule a build}"
+                     border="0"
+                     align="middle"
+                     style="float: right; clear: none;" />
+              </a>
+            </j:if>
             <wi:jobLinkWithIcon job="${job}" iconSize="24x24"/>
 <!--
             <j:choose>
