@@ -22,7 +22,35 @@
         <j:while test="${i &lt; jobs.size() &amp;&amp; j &lt; 3}">
           <j:set var="job" value="${jobs.get(i)}" />
           <td style="border: 1px solid #bbb;">
-            <wi:jobLinkWithIcon job="${job}"/>
+            <wi:jobLinkWithIcon job="${job}" iconSize="24x24"/>
+<!--
+            <j:choose>
+              <j:when test="${job.getProperty('jenkins.plugins.jobicon.CustomIconProperty')!=null}">
+                <img src="${job.shortUrl}customIcon/" alt="icon"
+                     height="24" witdth="24" border="0" align="middle"/>
+              </j:when>
+              <j:otherwise>
+                <img src="/plugin/custom-job-icon/icons/24x24/blank.png" alt="icon"
+                     height="24" witdth="24" border="0" align="middle"/>
+              </j:otherwise>
+            </j:choose>
+            <img src="${imagesURL}/16x16/${job.buildStatusUrl}"
+                 alt="${job.iconColor.description}"
+                 title="${job.iconColor.description}"/>
+            <img src="${imagesURL}/16x16/${job.buildHealth.iconUrl}"
+                 alt="${job.buildHealth.description}"
+                 title="${job.buildHealth.description}" />
+            <a href="${job.shortUrl}" tooltip="${job.description}">${job.displayName}</a>
+            <j:if test="${job.buildable and job.hasPermission(job.BUILD)}">
+              <a href="${job.shortUrl}build?delay=0sec">
+                <img src="${imagesURL}/16x16/clock.png"
+                     title="Schedule a build" alt="Schedule a build"
+                     border="0"
+                     align="middle"
+                     style="float: right; clear: none;" />
+              </a>
+            </j:if>
+-->
           </td>
           <j:set var="i" value="${i + 1}"/>
           <j:set var="j" value="${j + 1}"/>

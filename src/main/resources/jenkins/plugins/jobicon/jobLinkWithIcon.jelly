@@ -15,16 +15,25 @@
  -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <st:documentation>
-    Generates a link to a job - same as lib/hudson/jobLink except uses job short url
+    Generates a link to a job with an icon - same as lib/hudson/jobLink except uses job short url
     <st:attribute name="job" type="hudson.model.Job" use="required">
       Job object to be displayed.
     </st:attribute>
+    <st:attribute name="iconSize" type="java.lang.String" use="required">
+      Custom job icon size
+    </st:attribute>
   </st:documentation>
 
-  <j:if test="${job.getProperty('jenkins.plugins.jobicon.CustomIconProperty')!=null}">
-    <img src="${job.shortUrl}customIcon?size=16x16" alt="Job Custom Icon"
-         border="0" align="middle"/>
-  </j:if>
+  <j:choose>
+    <j:when test="${job.getProperty('jenkins.plugins.jobicon.CustomIconProperty')!=null}">
+      <img src="${job.shortUrl}customIcon?size=${iconSize}" alt="icon"
+           border="0" align="middle"/>
+    </j:when>
+    <j:otherwise>
+      <img src=" ${rootURL}/plugin/custom-job-icon/icons/${iconSize}/blank.png" alt="icon"
+           border="0" align="middle"/>
+    </j:otherwise>
+  </j:choose>
   <img src="${imagesURL}/16x16/${job.buildStatusUrl}"
        alt="${job.iconColor.description}"
        title="${job.iconColor.description}"/>
