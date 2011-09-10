@@ -34,7 +34,7 @@ public class CustomIconJobsPortlet extends DashboardPortlet
 		super(name);
 	}
 
-	@Extension
+	@Extension(optional=true)
 	public static class DescriptorImpl extends Descriptor<DashboardPortlet>
 	{
 		@Override

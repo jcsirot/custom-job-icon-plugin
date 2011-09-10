@@ -34,7 +34,7 @@ public class CustomIconLatestBuilds extends LatestBuilds
 		super(name, numBuilds);
 	}
 
-	@Extension
+	@Extension(optional=true)
 	public static class DescriptorImpl extends Descriptor<DashboardPortlet>
 	{
 		@Override
