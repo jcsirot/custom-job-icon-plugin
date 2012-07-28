@@ -1,5 +1,5 @@
 <!--
-      Copyright 2011 Jean-Christophe Sirot <sirot@chelonix.com>
+      Copyright 2011-2012 Jean-Christophe Sirot <sirot@chelonix.com>
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -15,17 +15,30 @@
  -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <f:optionalBlock name="jobicon" title="${%Use custom icon}"
-                   checked="${!(instance.name == null)}"
+                   checked="${!(instance.iconfile == null)}"
                    help="${descriptor.getHelpFile('config')}">
-    <f:entry title="${%Icon file}" field="name"
-             help="${descriptor.getHelpFile('name')}">
-      <f:textbox/>
-    </f:entry>
-    <f:entry>
-      <j:set var="url" value="${rootURL}/descriptor/jenkins.plugins.jobicon.CustomIconProperty/startUpload?job=${it.name}"/>
-      <iframe src="${url}" frameborder="0" width="100%">
-        <a href="${url}" target="_blank">Upload a custom icon</a>
-      </iframe>
+    <f:entry title="${%Select icon}" help="${descriptor.getHelpFile('iconfile')}">
+      <table>
+        <j:choose>
+          <j:when test="${descriptor.isIconListEmpty()}">
+            <tr>
+              <td>No available icons</td>
+            </tr>
+          </j:when>
+          <j:otherwise>
+            <j:forEach var="row" items="${descriptor.getIconsAsListOfList(8)}">
+              <tr>
+                <j:forEach var="i" items="${row}">
+                  <td>
+                    <img src="${rootURL}/userContent/customIcon/${i}" height="32" width="32"/>
+                    <f:radio name="iconfile" checked="${instance.iconfile == i}" title="" value="${i}"/>
+                  </td>
+                </j:forEach>
+              </tr>
+            </j:forEach>
+          </j:otherwise>
+        </j:choose>
+      </table>
     </f:entry>
   </f:optionalBlock>
 </j:jelly>

@@ -15,23 +15,26 @@
  */
 package jenkins.plugins.jobicon;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collection;
-import javax.servlet.ServletException;
 import hudson.Extension;
 import hudson.FilePath;
-import hudson.model.AbstractProject;
-import hudson.model.Item;
 import hudson.model.Job;
 import hudson.model.JobProperty;
 import hudson.model.JobPropertyDescriptor;
-import hudson.util.FormValidation;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
+import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.fileupload.FileItem;
-import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
@@ -46,12 +49,12 @@ public class CustomIconProperty extends JobProperty<Job<?, ?>>
 {
 	public static final String PATH = "customIcon";
 	
-	public final String name;
+	public final String iconfile;
 
 	@DataBoundConstructor
-	public CustomIconProperty(String name)
+	public CustomIconProperty(String iconfile)
 	{
-		this.name = name;
+		this.iconfile = iconfile;
 	}
 	
 	@Override
@@ -62,7 +65,7 @@ public class CustomIconProperty extends JobProperty<Job<?, ?>>
 	
 	@Extension
 	public static final class DescriptorImpl extends JobPropertyDescriptor
-	{
+	{		
 		@Override
 		public String getDisplayName()
 		{
@@ -80,35 +83,14 @@ public class CustomIconProperty extends JobProperty<Job<?, ?>>
 			JSONObject formData) throws FormException
 		{
 			if (formData.has("jobicon")) {
-				String name = formData.getJSONObject("jobicon").getString("name");
-				if (new File(name).isAbsolute()) {
-					throw new FormException(Messages.Config_absolute(), "name");
+				if (!formData.getJSONObject("jobicon").has("iconfile")) {
+					throw new FormException(Messages.Config_missing(), "iconfile");
 				}
 				return req.bindJSON(CustomIconProperty.class, 
 					formData.getJSONObject("jobicon"));
 			}
 			return null;
 		}
-
-		/**
-		 * Validates the icon filename form.
-		 * @param job the current configured {@code Job}
-		 * @param name the filename to be validated
-		 * @return the validation
-		 */
-		public FormValidation doCheckName(@AncestorInPath Job job, @QueryParameter String name) 
-				throws IOException, InterruptedException
-		{
-			File sub = new File(name);
-			if (sub.isAbsolute()) {
-				return FormValidation.error(Messages.Config_absolute());
-			}
-			FilePath path = new FilePath(job.getRootDir()).child(CustomIconProperty.PATH);
-			return path.validateRelativePath(name, true, true);
-			
-		}
-		
-		
 
 		/**
 		 * Serves the upload form
@@ -130,33 +112,71 @@ public class CustomIconProperty extends JobProperty<Job<?, ?>>
 		 */
 		public void doUpload(StaplerRequest req, StaplerResponse rsp,
 			@QueryParameter String job)
-			throws IOException, ServletException, InterruptedException
+			throws IOException, ServletException, InterruptedException, 
+			NoSuchAlgorithmException
 		{
 			Jenkins jenkins = Jenkins.getInstance();
-			AbstractProject prj = (AbstractProject) jenkins.getItem(job);
-			prj.checkPermission(Item.CONFIGURE);
+			jenkins.checkPermission(Jenkins.ADMINISTER);
 			FileItem file = req.getFileItem("jobicon.file");
 			String error = null;
-			String filename = null;
 			if (file == null || file.getName().isEmpty()) {
 				error = Messages.Upload_noFile();
 			} else {
 				// sanitize filename
-				filename = file.getName().replaceFirst(".*/", "").replaceAll("[^\\w.,;:()#@!=+-]", "_");
-				FilePath iconDir = new FilePath(prj.getRootDir()).child("customIcon");
+				//filename = file.getName().replaceFirst(".*/", "").replaceAll("[^\\w.,;:()#@!=+-]", "_");
+				MessageDigest dg = MessageDigest.getInstance("SHA1");
+				String filename = Hex.encodeHexString(dg.digest(file.get())) + ".png";
+				FilePath iconDir = jenkins.getRootPath().child("userContent").child(PATH);
 				iconDir.mkdirs();
-				FilePath icon = iconDir.child(filename);//new File(prj.getRootDir(), filename);
+				FilePath icon = iconDir.child(filename);
 				if (icon.exists()) {
 					error = Messages.Upload_dup();
 				}
-				icon.copyFrom(file);
+				ByteArrayOutputStream out = new ByteArrayOutputStream();
+				ImageUtils.resize(file.getInputStream(), out, 64);
+				icon.copyFrom(new ByteArrayInputStream(out.toByteArray()));
 				icon.chmod(0644);
 			}
 			rsp.setContentType("text/html");
-			rsp.setContentType("text/html");
 			rsp.getWriter().println(
-				(error != null ? error : Messages.Upload_done("<tt>" + filename + "</tt>"))
+				(error != null ? error : Messages.Upload_done())
 				+ " <a href=\"javascript:history.back()\">" + Messages.Upload_back() + "</a>");
+		}
+
+		public List<String> getIcons() throws IOException, InterruptedException
+		{
+			FilePath iconDir = Jenkins.getInstance().getRootPath()
+					.child("userContent").child(PATH);
+			if (!iconDir.exists()) {
+				return Collections.EMPTY_LIST;
+			}
+			List<FilePath> files = iconDir.list();
+			List<String> names = new ArrayList<String>();
+			for (FilePath fp: files) {
+				names.add(fp.getName());
+			}
+			return names;
+		}
+		
+		public boolean isIconListEmpty() throws IOException, InterruptedException
+		{
+			return getIcons().isEmpty();
+		}
+
+		public List<List<String>> getIconsAsListOfList(int colCount)
+				throws IOException, InterruptedException
+		{
+			List<String> icons = getIcons();
+			List<List<String>> split = new ArrayList<List<String>>();
+			List<String> tmp = null;
+			for (int i = 0; i < icons.size(); i++) {
+				if (i % colCount == 0) {
+					tmp = new ArrayList<String>();
+					split.add(tmp);
+				}
+				tmp.add(icons.get(i));
+			}
+			return split;
 		}
 	}
 }

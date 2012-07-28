@@ -18,8 +18,6 @@ package jenkins.plugins.jobicon;
 import hudson.FilePath;
 import hudson.model.Action;
 import hudson.model.Job;
-import java.awt.Graphics2D;
-import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -27,8 +25,8 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
-import javax.imageio.ImageIO;
 import javax.servlet.ServletException;
+import jenkins.model.Jenkins;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -58,16 +56,19 @@ public class CustomIconAction implements Action
 		this.cache = new HashMap<Integer, byte[]>();
 	}
 
+	@Override
 	public String getIconFileName()
 	{
 		return null;
 	}
 
+	@Override
 	public String getDisplayName()
 	{
 		return "Custom Icon";
 	}
 
+	@Override
 	public String getUrlName()
 	{
 		return "customIcon";
@@ -83,9 +84,11 @@ public class CustomIconAction implements Action
 			throws IOException, ServletException, InterruptedException
 	{
 		CustomIconProperty prop = (CustomIconProperty) job.getProperty(CustomIconProperty.class);
-		FilePath fpath = new FilePath(job.getRootDir()).child("customIcon").child(prop.name);
+		FilePath fpath = Jenkins.getInstance().getRootPath()
+				.child("userContent").child(CustomIconProperty.PATH)
+				.child(prop.iconfile);
 		URL url = fpath.toURI().toURL();
-		InputStream in = url.openStream();
+		InputStream in;
 		String size = req.getParameter("size");
 		if ("16x16".equals(size)) {
 			in = new ByteArrayInputStream(resize(url, 16));
@@ -100,7 +103,7 @@ public class CustomIconAction implements Action
 	}
 
 	/**
-	 * Resizes the icon image.
+	 * Resizes the icon image or gets it from cache.
 	 * 
 	 * @param url  the original image URL
 	 * @param size  the requested size
@@ -111,16 +114,9 @@ public class CustomIconAction implements Action
 		if (cache.get(size) != null) {
 			return cache.get(size);
 		} 
-		BufferedImage img = ImageIO.read(url);
-		BufferedImage resizedImage = new BufferedImage(size, size, 
-				BufferedImage.TYPE_INT_ARGB);
-		Graphics2D g = resizedImage.createGraphics();
-		g.drawImage(img, 0, 0, size, size, null);
-		g.dispose();
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		ImageIO.write(resizedImage, "png", out);
-		byte[] data = out.toByteArray();
-		cache.put(size, data);
-		return data;
+		ImageUtils.resize(url.openStream(), out, size);
+		cache.put(size, out.toByteArray());
+		return out.toByteArray();
 	}
 }
