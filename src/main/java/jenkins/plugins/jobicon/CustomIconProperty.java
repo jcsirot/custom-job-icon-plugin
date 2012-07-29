@@ -143,6 +143,12 @@ public class CustomIconProperty extends JobProperty<Job<?, ?>>
 				+ " <a href=\"javascript:history.back()\">" + Messages.Upload_back() + "</a>");
 		}
 
+		/**
+		 * Retrieves the list of available icons.
+		 * @return the list of icon filenames
+		 * @throws IOException if an error occurs while reading the icons directory
+		 * @throws InterruptedException 
+		 */
 		public List<String> getIcons() throws IOException, InterruptedException
 		{
 			FilePath iconDir = Jenkins.getInstance().getRootPath()
@@ -158,11 +164,27 @@ public class CustomIconProperty extends JobProperty<Job<?, ?>>
 			return names;
 		}
 		
+		/**
+		 * Indicates if any icon has been loaded.
+		 * 
+		 * @return {@code true} if no icon is available, {@code false} otherwise
+		 * @throws IOException if an error occurs while reading the icons directory
+		 * @throws InterruptedException 
+		 */
 		public boolean isIconListEmpty() throws IOException, InterruptedException
 		{
 			return getIcons().isEmpty();
 		}
 
+		/**
+		 * Return a matrix of icon filenames. This matrix is used to display 
+		 * the table of available icons in the job configuration page.
+		 * 
+		 * @param colCount the number of columns of the matrix.
+		 * @return the icon filenames as a matrix (as a list of rows)
+		 * @throws IOException if an error occurs while reading the icons directory
+		 * @throws InterruptedException 
+		 */
 		public List<List<String>> getIconsAsListOfList(int colCount)
 				throws IOException, InterruptedException
 		{
