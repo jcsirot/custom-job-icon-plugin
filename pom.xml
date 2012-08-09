@@ -8,7 +8,7 @@
   </parent>
 
   <artifactId>custom-job-icon</artifactId>
-  <version>0.1</version>
+  <version>1.0-SNAPSHOT</version>
   <name>Custom Job Icon plugin</name>
   <url>https://wiki.jenkins-ci.org/display/JENKINS/Custom+Job+Icon+Plugin</url>
   <packaging>hpi</packaging>
