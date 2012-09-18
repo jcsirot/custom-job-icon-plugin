@@ -13,6 +13,7 @@
   See the License for the specific language governing permissions and
   limitations under the License.
  -->
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core">
   <th tooltip="Custom Icon"/>
 </j:jelly>
