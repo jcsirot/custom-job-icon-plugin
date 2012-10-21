@@ -27,7 +27,7 @@
             <j:forEach var="i" items="${row}">
               <td>
                 <img id="${i}" src="${rootURL}/userContent/customIcon/${i}.png" height="32" width="32"/>
-                <input type="button" value="${%Delete icon button}" onclick="deleteIcon('${i}');"/>
+                <input type="button" value="${%Delete}" onclick="deleteIcon('${i}');"/>
               </td>
             </j:forEach>
           </tr>
