@@ -170,7 +170,7 @@ public class CustomIconProperty extends JobProperty<Job<?, ?>>
 		}
 
 		/**
-		 * Retrieves the list of available icons.
+		 * Retrieves the list of available icons. Sort the icons by filenames.
 		 * @return the list of icon filenames
 		 * @throws IOException if an error occurs while reading the icons directory
 		 * @throws InterruptedException
@@ -187,6 +187,7 @@ public class CustomIconProperty extends JobProperty<Job<?, ?>>
 			for (FilePath fp: files) {
 				names.add(fp.getBaseName());
 			}
+            Collections.sort(names);
 			return names;
 		}
 
