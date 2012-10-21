@@ -15,11 +15,6 @@
  */
 package jenkins.plugins.jobicon;
 
-import hudson.Extension;
-import hudson.FilePath;
-import hudson.model.Job;
-import hudson.model.JobProperty;
-import hudson.model.JobPropertyDescriptor;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -30,6 +25,11 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import hudson.Extension;
+import hudson.FilePath;
+import hudson.model.Job;
+import hudson.model.JobProperty;
+import hudson.model.JobPropertyDescriptor;
 import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
@@ -37,18 +37,20 @@ import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.fileupload.FileItem;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.RequestImpl;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.lang.Klass;
 
 /**
  * This property holds the custom icon filename.
- * 
+ *
  * @author Jean-Christophe Sirot
  */
 public class CustomIconProperty extends JobProperty<Job<?, ?>>
 {
 	public static final String PATH = "customIcon";
-	
+
 	public final String iconfile;
 
 	@DataBoundConstructor
@@ -56,16 +58,16 @@ public class CustomIconProperty extends JobProperty<Job<?, ?>>
 	{
 		this.iconfile = iconfile;
 	}
-	
+
 	@Override
 	public Collection<CustomIconAction> getJobActions(Job job)
 	{
 		return Arrays.asList(new CustomIconAction(job));
 	}
-	
+
 	@Extension
 	public static final class DescriptorImpl extends JobPropertyDescriptor
-	{		
+	{
 		@Override
 		public String getDisplayName()
 		{
@@ -79,14 +81,14 @@ public class CustomIconProperty extends JobProperty<Job<?, ?>>
 		}
 
 		@Override
-		public CustomIconProperty newInstance(StaplerRequest req, 
+		public CustomIconProperty newInstance(StaplerRequest req,
 			JSONObject formData) throws FormException
 		{
 			if (formData.has("jobicon")) {
 				if (!formData.getJSONObject("jobicon").has("iconfile")) {
 					throw new FormException(Messages.Config_missing(), "iconfile");
 				}
-				return req.bindJSON(CustomIconProperty.class, 
+				return req.bindJSON(CustomIconProperty.class,
 					formData.getJSONObject("jobicon"));
 			}
 			return null;
@@ -105,6 +107,30 @@ public class CustomIconProperty extends JobProperty<Job<?, ?>>
 		}
 
 		/**
+		 * Serves the icon table snippet
+		 * @param req the stapler request
+		 * @param rsp the stapler response
+		 */
+		public void doGlobalIconsTable(StaplerRequest req, StaplerResponse rsp)
+				throws IOException, ServletException
+		{
+			rsp.setContentType("text/html");
+			((RequestImpl)req).getView(Klass.java(CustomIconProperty.class), this, "global-icons-table.jelly").forward(req, rsp);
+		}
+
+		/**
+		 * Delete an icon. The request parameter {@code icon} contains the id.
+		 * @param req the stapler request
+		 * @param rsp the stapler response
+		 */
+		public void doDeleteIcon(StaplerRequest req, StaplerResponse rsp)
+				throws IOException, ServletException, InterruptedException
+		{
+			deleteIcon(req.getParameter("icon"));
+			doGlobalIconsTable(req, rsp);
+		}
+
+		/**
 		 * Upload an image file.
 		 * @param req the stapler request
 		 * @param rsp the stapler response
@@ -112,7 +138,7 @@ public class CustomIconProperty extends JobProperty<Job<?, ?>>
 		 */
 		public void doUpload(StaplerRequest req, StaplerResponse rsp,
 			@QueryParameter String job)
-			throws IOException, ServletException, InterruptedException, 
+			throws IOException, ServletException, InterruptedException,
 			NoSuchAlgorithmException
 		{
 			Jenkins jenkins = Jenkins.getInstance();
@@ -144,10 +170,10 @@ public class CustomIconProperty extends JobProperty<Job<?, ?>>
 		}
 
 		/**
-		 * Retrieves the list of available icons.
+		 * Retrieves the list of available icons. Sort the icons by filenames.
 		 * @return the list of icon filenames
 		 * @throws IOException if an error occurs while reading the icons directory
-		 * @throws InterruptedException 
+		 * @throws InterruptedException
 		 */
 		public List<String> getIcons() throws IOException, InterruptedException
 		{
@@ -159,17 +185,34 @@ public class CustomIconProperty extends JobProperty<Job<?, ?>>
 			List<FilePath> files = iconDir.list();
 			List<String> names = new ArrayList<String>();
 			for (FilePath fp: files) {
-				names.add(fp.getName());
+				names.add(fp.getBaseName());
 			}
+            Collections.sort(names);
 			return names;
 		}
-		
+
+		/**
+		 * Delete an icon.
+		 * @param id the icon id
+		 * @throws IOException
+		 * @throws InterruptedException 
+		 */
+		private void deleteIcon(String id) throws IOException, InterruptedException
+		{
+			FilePath iconFile = Jenkins.getInstance().getRootPath()
+				.child("userContent").child(PATH)
+				.child(id + ".png");
+			if (iconFile.exists()) {
+				iconFile.delete();
+			}
+		}
+
 		/**
 		 * Indicates if any icon has been loaded.
-		 * 
+		 *
 		 * @return {@code true} if no icon is available, {@code false} otherwise
 		 * @throws IOException if an error occurs while reading the icons directory
-		 * @throws InterruptedException 
+		 * @throws InterruptedException
 		 */
 		public boolean isIconListEmpty() throws IOException, InterruptedException
 		{
@@ -177,13 +220,13 @@ public class CustomIconProperty extends JobProperty<Job<?, ?>>
 		}
 
 		/**
-		 * Return a matrix of icon filenames. This matrix is used to display 
+		 * Return a matrix of icon filenames. This matrix is used to display
 		 * the table of available icons in the job configuration page.
-		 * 
+		 *
 		 * @param colCount the number of columns of the matrix.
 		 * @return the icon filenames as a matrix (as a list of rows)
 		 * @throws IOException if an error occurs while reading the icons directory
-		 * @throws InterruptedException 
+		 * @throws InterruptedException
 		 */
 		public List<List<String>> getIconsAsListOfList(int colCount)
 				throws IOException, InterruptedException

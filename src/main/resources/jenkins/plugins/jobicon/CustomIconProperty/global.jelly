@@ -15,12 +15,44 @@
  -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <f:section title="Custom Icons">
+  <f:section title="${%Custom icons}">
     <f:entry help="${descriptor.getHelpFile('global')}">
       <j:set var="url" value="${rootURL}/descriptor/jenkins.plugins.jobicon.CustomIconProperty/startUpload?job=${it.name}"/>
       <iframe src="${url}" frameborder="0" width="100%">
-        <a href="${url}" target="_blank">Upload a custom icon</a>
+	<a href="${url}" target="_blank">Upload a custom icon</a>
       </iframe>
     </f:entry>
+    <f:entry title="${%Delete icons}" help="${descriptor.getHelpFile('global-delete')}" >
+      <div>
+        <st:include it="${descriptor}" page="global-icons-table.jelly" class="jenkins.plugins.jobicon.CustomIconProperty"/>
+      </div>
+      <input type="button" value="${%Refresh icon list}" id="refresh-icons"/>
+    </f:entry>
+    <script>
+      document.getElementById("refresh-icons").addEventListener("click", function(e) {
+          var div = document.getElementById("icons-table").parentNode;
+          new Ajax.Request("/descriptor/jenkins.plugins.jobicon.CustomIconProperty/globalIconsTable", {
+            onSuccess: function(rsp) {
+              var table = document.getElementById("icons-table");
+              div.removeChild(table);
+              div.innerHTML = rsp.responseText;
+            }
+          });
+        });
+    </script>
+	<script>
+      function deleteIcon(id) {
+        var div = document.getElementById("icons-table").parentNode;
+        if (confirm("${%Delete this icon?}")) {
+          new Ajax.Request("/descriptor/jenkins.plugins.jobicon.CustomIconProperty/deleteIcon?icon=" + id, {
+            onSuccess: function(rsp) {
+              var table = document.getElementById("icons-table");
+              div.removeChild(table);
+              div.innerHTML = rsp.responseText;
+            }
+          });
+        }
+      }
+    </script>
   </f:section>
 </j:jelly>
