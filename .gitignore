@@ -2,7 +2,7 @@
 *~
 .DS_Store
 /work/
-.idea
+/.idea/
 *.iml
 .classpath
 .project
