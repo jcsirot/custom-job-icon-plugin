@@ -33,8 +33,8 @@ import org.kohsuke.stapler.DataBoundConstructor;
  */
 public class CustomIconJobsPortlet extends DashboardPortlet {
 
-  public static final int DEFAULT_COLUMN_COUNT = 3;
-  private int columnCount = DEFAULT_COLUMN_COUNT;
+	public static final int DEFAULT_COLUMN_COUNT = 3;
+	private int columnCount = DEFAULT_COLUMN_COUNT;
 	private String iconSize = "24x24";
 	private boolean fillColumnFirst = false;
 
