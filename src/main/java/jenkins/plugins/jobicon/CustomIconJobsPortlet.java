@@ -15,32 +15,92 @@
  */
 package jenkins.plugins.jobicon;
 
+import java.util.List;
+
 import hudson.Extension;
 import hudson.model.Descriptor;
+import hudson.model.Job;
 import hudson.plugins.view.dashboard.DashboardPortlet;
+import hudson.util.ListBoxModel;
+
 import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
- * A Dashboard portlet which is similar to the standard dashboard plugin 
- * Jobs Grid but includes the custom icon when configured.
+ * A Dashboard portlet which is similar to the standard dashboard plugin Jobs
+ * Grid but includes the custom icon when configured.
  * 
  * @author Jean-Christophe Sirot
  */
-public class CustomIconJobsPortlet extends DashboardPortlet
-{
+public class CustomIconJobsPortlet extends DashboardPortlet {
+
+	private int columnCount = 3;
+	private String iconSize = "24x24";
+	private boolean fillColumnFirst = false;
+
 	@DataBoundConstructor
-	public CustomIconJobsPortlet(String name)
-	{
+	public CustomIconJobsPortlet(
+	        String name,
+	        String iconSize,
+	        int columnCount,
+	        boolean fillColumnFirst) {
 		super(name);
+		this.iconSize = iconSize;
+		this.columnCount = columnCount;
+		this.fillColumnFirst = fillColumnFirst;
 	}
 
-	@Extension(optional=true)
-	public static class DescriptorImpl extends Descriptor<DashboardPortlet>
-	{
+	public int getColumnCount() {
+		return this.columnCount <= 0 ? 3 : this.columnCount;
+	}
+
+	public String getIconSize() {
+		return this.iconSize.isEmpty() ? "24x24" : this.iconSize;
+	}
+
+	public int getRowCount() {
+		int s = this.getDashboard().getJobs().size();
+		int rowCount = s / this.columnCount;
+		if (s % this.columnCount > 0) {
+			rowCount += 1;
+		}
+		return rowCount;
+	}
+
+	public boolean getFillColumnFirst() {
+		return this.fillColumnFirst;
+	}
+
+	public Job getJob(int curRow, int curColumun) {
+		List<Job> jobs = this.getDashboard().getJobs();
+		int idx = 0;
+		// get grid coordinates from given params
+		if (this.fillColumnFirst) {
+			idx = curRow + curColumun * this.getRowCount();
+			if (idx >= jobs.size()) {
+				return null;
+			}
+		} else {
+			idx = curColumun + curRow * this.columnCount;
+			if (idx >= jobs.size()) {
+				return null;
+			}
+		}
+		return jobs.get(idx);
+	}
+
+	@Extension(optional = true)
+	public static class DescriptorImpl extends Descriptor<DashboardPortlet> {
 		@Override
-		public String getDisplayName()
-		{
+		public String getDisplayName() {
 			return Messages.Dashboard_jobsGridWithIcons();
+		}
+
+		public ListBoxModel doFillIconSizeItems() {
+			ListBoxModel m = new ListBoxModel();
+			m.add("16x16","16x16");
+			m.add("24x24","24x24");
+			m.add("32x32","32x32");
+			return m;
 		}
 	}
 }
