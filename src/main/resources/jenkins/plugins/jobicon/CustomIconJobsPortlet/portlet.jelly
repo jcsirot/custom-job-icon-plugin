@@ -29,10 +29,10 @@
                      title="${%Schedule a build}" alt="${%Schedule a build}"
                      border="0"
                      align="middle"
-                     style="float: right; clear: none;" />
+                     style="float: right; clear: none;" class="icon16x16"/>
               </a>
             </j:if>
-            <wi:jobLinkWithIcon job="${job}" iconSize="24x24"/>
+            <wi:jobLinkWithIcon job="${job}" iconSize="16x16"/>
           </td>
           <j:set var="i" value="${i + 1}"/>
           <j:set var="j" value="${j + 1}"/>
