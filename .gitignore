@@ -2,3 +2,5 @@
 *~
 .DS_Store
 /work/
+.idea
+*.iml
