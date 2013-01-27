@@ -18,7 +18,7 @@
   <td>
     <j:if test="${job.getProperty('jenkins.plugins.jobicon.CustomIconProperty')!=null}">
       <a href="${job.shortUrl}" title="${job.name}">
-        <img src="${job.shortUrl}customIcon/?size=${subIconSize}" />
+        <img src="${job.shortUrl}customIcon/?size=${subIconSize}" class="icon${iconSize}" />
       </a>
     </j:if>
   </td>
