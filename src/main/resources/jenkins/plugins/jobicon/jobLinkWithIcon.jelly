@@ -27,7 +27,7 @@
 
   <j:choose>
     <j:when test="${job.getProperty('jenkins.plugins.jobicon.CustomIconProperty')!=null}">
-      <img src="${job.shortUrl}customIcon?size=${iconSize}" alt="icon"
+      <img src="${job.shortUrl}customIcon/?size=${iconSize}" alt="icon"
            border="0" align="middle"/>
     </j:when>
     <j:otherwise>
