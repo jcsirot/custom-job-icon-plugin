@@ -27,19 +27,19 @@
 
   <j:choose>
     <j:when test="${job.getProperty('jenkins.plugins.jobicon.CustomIconProperty')!=null}">
-      <img src="${job.shortUrl}customIcon?size=${iconSize}" alt="icon"
-           border="0" align="middle"/>
+      <img src="${job.shortUrl}customIcon/?size=${iconSize}" alt="icon"
+           border="0" align="middle" class="icon${iconSize}"/>
     </j:when>
     <j:otherwise>
       <img src=" ${rootURL}/plugin/custom-job-icon/icons/${iconSize}/blank.png" alt="icon"
-           border="0" align="middle"/>
+           border="0" align="middle" class="icon${iconSize}"/>
     </j:otherwise>
   </j:choose>
-  <img src="${imagesURL}/16x16/${job.buildStatusUrl}"
+  <img src="${imagesURL}/${iconSize}/${job.buildStatusUrl}"
        alt="${job.iconColor.description}"
-       title="${job.iconColor.description}"/>
-  <img src="${imagesURL}/16x16/${job.buildHealth.iconUrl}"
+       title="${job.iconColor.description}" class="icon${iconSize}"/>
+  <img src="${imagesURL}/${iconSize}/${job.buildHealth.iconUrl}"
        alt="${job.buildHealth.description}"
-       title="${job.buildHealth.description}" />
+       title="${job.buildHealth.description}" class="icon${iconSize}"/>
   <a href="${job.shortUrl}" tooltip="${job.description}">${job.displayName}</a>
 </j:jelly>
