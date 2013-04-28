@@ -36,8 +36,8 @@
 		<td data="${it.getBuildColumnSortData(build)}">
 		  <a href="${h.getRelativeLinkTo(build.parent)}/${build.number}" tooltip="${build.description}">
 		    <img src="${imagesURL}/${iconSize}/${build.buildStatusUrl}"
-                         alt="${build.iconColor.description}"
-                         title="${build.iconColor.description}" class="icon${iconSize}"/>
+             alt="${build.iconColor.description}"
+             title="${build.iconColor.description}" class="icon${iconSize}"/>
                     ${build.displayName}
 		  </a>
 		</td>
