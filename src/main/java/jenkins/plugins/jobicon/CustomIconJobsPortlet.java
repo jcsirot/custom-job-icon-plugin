@@ -33,7 +33,8 @@ import org.kohsuke.stapler.DataBoundConstructor;
  */
 public class CustomIconJobsPortlet extends DashboardPortlet {
 
-	private int columnCount = 3;
+  public static final int DEFAULT_COLUMN_COUNT = 3;
+  private int columnCount = DEFAULT_COLUMN_COUNT;
 	private String iconSize = "24x24";
 	private boolean fillColumnFirst = false;
 
@@ -50,7 +51,7 @@ public class CustomIconJobsPortlet extends DashboardPortlet {
 	}
 
 	public int getColumnCount() {
-		return this.columnCount <= 0 ? 3 : this.columnCount;
+		return this.columnCount <= 0 ? DEFAULT_COLUMN_COUNT : this.columnCount;
 	}
 
 	public String getIconSize() {
@@ -59,8 +60,8 @@ public class CustomIconJobsPortlet extends DashboardPortlet {
 
 	public int getRowCount() {
 		int s = this.getDashboard().getJobs().size();
-		int rowCount = s / this.columnCount;
-		if (s % this.columnCount > 0) {
+		int rowCount = s / getColumnCount();
+		if (s % getColumnCount() > 0) {
 			rowCount += 1;
 		}
 		return rowCount;
@@ -80,7 +81,7 @@ public class CustomIconJobsPortlet extends DashboardPortlet {
 				return null;
 			}
 		} else {
-			idx = curColumun + curRow * this.columnCount;
+			idx = curColumun + curRow * getColumnCount();
 			if (idx >= jobs.size()) {
 				return null;
 			}
