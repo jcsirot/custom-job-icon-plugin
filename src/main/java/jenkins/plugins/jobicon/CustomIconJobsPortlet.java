@@ -55,7 +55,7 @@ public class CustomIconJobsPortlet extends DashboardPortlet {
 	}
 
 	public String getIconSize() {
-		return this.iconSize.isEmpty() ? "24x24" : this.iconSize;
+		return (this.iconSize==null || this.iconSize.isEmpty()) ? "24x24" : this.iconSize;
 	}
 
 	public int getRowCount() {
