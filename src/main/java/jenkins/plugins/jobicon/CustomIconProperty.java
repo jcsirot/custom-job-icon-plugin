@@ -1,5 +1,5 @@
 /*
- *     Copyright 2011 Jean-Christophe Sirot <sirot@chelonix.com>
+ *     Copyright 2011-2013 Jean-Christophe Sirot <sirot@chelonix.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,6 @@
  */
 package jenkins.plugins.jobicon;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -49,8 +47,6 @@ import org.kohsuke.stapler.lang.Klass;
  */
 public class CustomIconProperty extends JobProperty<Job<?, ?>>
 {
-	public static final String PATH = "customIcon";
-
 	public final String iconfile;
 
 	@DataBoundConstructor
@@ -126,7 +122,7 @@ public class CustomIconProperty extends JobProperty<Job<?, ?>>
 		public void doDeleteIcon(StaplerRequest req, StaplerResponse rsp)
 				throws IOException, ServletException, InterruptedException
 		{
-			deleteIcon(req.getParameter("icon"));
+			ImageUtils.deleteIcon(req.getParameter("icon"));
 			doGlobalIconsTable(req, rsp);
 		}
 
@@ -152,16 +148,11 @@ public class CustomIconProperty extends JobProperty<Job<?, ?>>
 				//filename = file.getName().replaceFirst(".*/", "").replaceAll("[^\\w.,;:()#@!=+-]", "_");
 				MessageDigest dg = MessageDigest.getInstance("SHA1");
 				String filename = Hex.encodeHexString(dg.digest(file.get())) + ".png";
-				FilePath iconDir = jenkins.getRootPath().child("userContent").child(PATH);
-				iconDir.mkdirs();
-				FilePath icon = iconDir.child(filename);
-				if (icon.exists()) {
+				if (ImageUtils.exists(filename)) {
 					error = Messages.Upload_dup();
+				} else {
+					ImageUtils.storeIcon(filename, file.get());
 				}
-				ByteArrayOutputStream out = new ByteArrayOutputStream();
-				ImageUtils.resize(file.getInputStream(), out, 64);
-				icon.copyFrom(new ByteArrayInputStream(out.toByteArray()));
-				icon.chmod(0644);
 			}
 			rsp.setContentType("text/html");
 			rsp.getWriter().println(
@@ -178,7 +169,7 @@ public class CustomIconProperty extends JobProperty<Job<?, ?>>
 		public List<String> getIcons() throws IOException, InterruptedException
 		{
 			FilePath iconDir = Jenkins.getInstance().getRootPath()
-					.child("userContent").child(PATH);
+					.child("userContent").child(ImageUtils.PATH).child(ImageUtils.Size.ORIGIN.directory);
 			if (!iconDir.exists()) {
 				return Collections.EMPTY_LIST;
 			}
@@ -189,22 +180,6 @@ public class CustomIconProperty extends JobProperty<Job<?, ?>>
 			}
             Collections.sort(names);
 			return names;
-		}
-
-		/**
-		 * Delete an icon.
-		 * @param id the icon id
-		 * @throws IOException
-		 * @throws InterruptedException 
-		 */
-		private void deleteIcon(String id) throws IOException, InterruptedException
-		{
-			FilePath iconFile = Jenkins.getInstance().getRootPath()
-				.child("userContent").child(PATH)
-				.child(id + ".png");
-			if (iconFile.exists()) {
-				iconFile.delete();
-			}
 		}
 
 		/**

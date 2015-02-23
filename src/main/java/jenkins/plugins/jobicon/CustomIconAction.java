@@ -1,5 +1,5 @@
 /*
- *     Copyright 2011 Jean-Christophe Sirot <sirot@chelonix.com>
+ *     Copyright 2011-2013 Jean-Christophe Sirot <sirot@chelonix.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,18 +15,11 @@
  */
 package jenkins.plugins.jobicon;
 
-import hudson.FilePath;
 import hudson.model.Action;
 import hudson.model.Job;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
+
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
 import javax.servlet.ServletException;
-import jenkins.model.Jenkins;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -35,15 +28,13 @@ import org.kohsuke.stapler.StaplerResponse;
  * icon image.
  * 
  * This action accepts the query parameter {@code size} with these
- * acceptable values {@code 16x16}, {@code 24x24} and {@code 32x32}. If this
- * query parameter is present the icon image is resized before being served.
+ * acceptable values {@code 16x16}, {@code 24x24} and {@code 32x32}.
  * 
  * @author Jean-Christophe Sirot
  */
 public class CustomIconAction implements Action
 {
 	private final Job job;
-	private final Map<Integer, byte[]> cache;
 
 	/**
 	 * Creates a new {@code CustomIconAction}.
@@ -53,7 +44,6 @@ public class CustomIconAction implements Action
 	public CustomIconAction(Job job)
 	{
 		this.job = job;
-		this.cache = new HashMap<Integer, byte[]>();
 	}
 
 	@Override
@@ -84,39 +74,9 @@ public class CustomIconAction implements Action
 			throws IOException, ServletException, InterruptedException
 	{
 		CustomIconProperty prop = (CustomIconProperty) job.getProperty(CustomIconProperty.class);
-		FilePath fpath = Jenkins.getInstance().getRootPath()
-				.child("userContent").child(CustomIconProperty.PATH)
-				.child(prop.iconfile);
-		URL url = fpath.toURI().toURL();
-		InputStream in;
+		String iconFilename = prop.iconfile;
 		String size = req.getParameter("size");
-		if ("16x16".equals(size)) {
-			in = new ByteArrayInputStream(resize(url, 16));
-		} else if ("24x24".equals(size)) {
-			in = new ByteArrayInputStream(resize(url, 24));
-		} else if ("32x32".equals(size)) {
-			in = new ByteArrayInputStream(resize(url, 32));
-		} else {
-			in = url.openStream();
-		}
-		rsp.serveFile(req, in, 0, 0, -1, fpath.getName());
+		rsp.sendRedirect(ImageUtils.getIconURL(iconFilename, size));
 	}
 
-	/**
-	 * Resizes the icon image or gets it from cache.
-	 * 
-	 * @param url  the original image URL
-	 * @param size  the requested size
-	 * @return  the resized image data
-	 */
-	private byte[] resize(URL url, int size) throws IOException
-	{
-		if (cache.get(size) != null) {
-			return cache.get(size);
-		} 
-		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		ImageUtils.resize(url.openStream(), out, size);
-		cache.put(size, out.toByteArray());
-		return out.toByteArray();
-	}
 }

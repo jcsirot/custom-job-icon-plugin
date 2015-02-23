@@ -32,7 +32,7 @@
                 <j:forEach var="i" items="${row}">
                   <j:set var="path" value="${i}.png" />
                   <td>
-                    <img src="${rootURL}/userContent/customIcon/${path}" height="32" width="32"/>
+                    <img src="${rootURL}/userContent/customIcon/32x32/${path}" height="32" width="32"/>
                     <f:radio name="iconfile" checked="${instance.iconfile == path}" title="" value="${path}"/>
                   </td>
                 </j:forEach>
